@@ -3,18 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"orders/configs"
 	"orders/internal/api"
+	"orders/internal/config"
 )
 
 func main() {
-	gin.SetMode(configs.Env("GIN_MODE"))
+	gin.SetMode(config.Env("GIN_MODE"))
 
 	router := gin.Default()
 	api.RegisterRoutes(router)
-
-	port := configs.Env("PORT")
-	fmt.Println(port)
+	port := config.Env("PORT")
 	err := router.Run(":" + port)
 	if err != nil {
 		fmt.Println(err)

@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		fmt.Println("Error loading .env file")
+	if err := godotenv.Load(".env.local", ".env"); err != nil {
+		fmt.Println("Error loading env files")
 	}
 }
 

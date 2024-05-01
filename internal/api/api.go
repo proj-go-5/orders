@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"orders/internal/db"
 	"orders/internal/repositories"
 	"orders/internal/services"
 )
@@ -11,7 +12,9 @@ type Routable interface {
 }
 
 func RegisterRoutes(router *gin.Engine) {
-	orderRepository := repositories.NewOrderRepository()
+	connection := db.GetConnection()
+
+	orderRepository := repositories.NewOrderRepository(connection)
 	orderManager := services.NewOrderManager(orderRepository)
 
 	var apis = []Routable{
