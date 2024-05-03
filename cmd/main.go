@@ -1,22 +1,36 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"orders/configs"
 	"orders/internal/api"
+	"orders/internal/config"
+	"orders/internal/db"
+	"orders/internal/repositories"
+	"orders/internal/server"
+	"orders/internal/services"
 )
 
 func main() {
-	gin.SetMode(configs.Env("GIN_MODE"))
+	gin.SetMode(config.Env("GIN_MODE"))
 
-	router := gin.Default()
-	api.RegisterRoutes(router)
+	connection := db.GetConnection()
 
-	port := configs.Env("PORT")
-	fmt.Println(port)
-	err := router.Run(":" + port)
-	if err != nil {
-		fmt.Println(err)
+	orderRepository := repositories.NewOrderRepository(connection)
+	orderManager := services.NewOrderManager(orderRepository)
+
+	var apis = []server.Routable{
+		api.NewOrderAPI(orderManager),
 	}
+
+	if err := runServer(apis); err != nil {
+		panic(err)
+	}
+}
+
+func runServer(apis []server.Routable) error {
+	router := gin.Default()
+	s := server.NewServer(router)
+	s.RegisterRoutes(apis)
+
+	return s.Start()
 }
