@@ -22,15 +22,10 @@ func main() {
 		api.NewOrderAPI(orderManager),
 	}
 
-	if err := runServer(apis); err != nil {
+	router := gin.Default()
+	newServer := server.NewServer(router)
+	newServer.RegisterRoutes(apis)
+	if err := newServer.Start(); err != nil {
 		panic(err)
 	}
-}
-
-func runServer(apis []server.Routable) error {
-	router := gin.Default()
-	s := server.NewServer(router)
-	s.RegisterRoutes(apis)
-
-	return s.Start()
 }
