@@ -7,9 +7,6 @@ import (
 	"log"
 	"net/http"
 	"orders/internal/config"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -35,10 +32,7 @@ func NewServer(router *gin.Engine) *Server {
 	}
 }
 
-func (s *Server) Start() error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
-	defer stop()
-
+func (s *Server) Start(ctx context.Context) error {
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("ListenAndServe error: %v", err)
@@ -51,7 +45,7 @@ func (s *Server) Start() error {
 
 	log.Println("Shutting down server...")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err := s.httpServer.Shutdown(shutdownCtx); err != nil {

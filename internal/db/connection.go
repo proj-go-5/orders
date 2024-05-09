@@ -1,25 +1,38 @@
 package db
 
 import (
-	"fmt"
+	"context"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
-	"orders/internal/config"
 )
 
-func GetConnection() *gorm.DB {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s sslmode=disable",
-		config.Env("DB_HOST"),
-		config.Env("DB_USER"),
-		config.Env("DB_PASSWORD"),
-		config.Env("DB_NAME"),
-	)
-	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+type Database struct {
+	dsn string
+}
+
+func (db *Database) GetConnection(ctx context.Context) (*gorm.DB, error) {
+	connection, err := gorm.Open(postgres.Open(db.dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		return nil, err
 	}
 
-	return connection
+	sqlDB, err := connection.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		<-ctx.Done()
+		err := sqlDB.Close()
+		if err != nil {
+			log.Printf("Failed to close database connection: %v", err)
+		}
+	}()
+
+	return connection, nil
+}
+
+func NewDatabase(dsn string) *Database {
+	return &Database{dsn}
 }
