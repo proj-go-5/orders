@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"orders/internal/enums/status"
 	"orders/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 
 func (api *OrderAPI) listOrders(c *gin.Context) {
 	c.JSON(http.StatusOK, []models.Order{
-		{ID: 1, Status: 1, CustomerID: 1, TotalPrice: 100},
+		{ID: 1, Status: status.Add, CustomerID: 1, TotalPrice: 100},
 	})
 }
 
