@@ -3,7 +3,8 @@ package status
 type Status string
 
 const (
-	Add        Status = "add"
-	Update     Status = "update"
-	Deactivate Status = "deactivate"
+	NotActive   Status = "not active"
+	Added       Status = "added"
+	Updated     Status = "updated"
+	Deactivated Status = "deactivated"
 )
