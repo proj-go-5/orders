@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"orders/internal/api"
 	"orders/internal/config"
@@ -8,29 +10,45 @@ import (
 	"orders/internal/repositories"
 	"orders/internal/server"
 	"orders/internal/services"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
 	gin.SetMode(config.Env("GIN_MODE"))
 
-	connection := db.GetConnection()
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s sslmode=disable",
+		config.Env("DB_HOST"),
+		config.Env("DB_USER"),
+		config.Env("DB_PASSWORD"),
+		config.Env("DB_NAME"),
+	)
 
-	orderRepository := repositories.NewOrderRepository(connection)
+	database := db.NewDatabase(dsn)
+	conn, stop, err := database.GetConnection()
+	defer stop()
+
+	if err != nil {
+		panic(err)
+	}
+
+	orderRepository := repositories.NewOrderRepository(conn)
 	orderManager := services.NewOrderManager(orderRepository)
 
 	var apis = []server.Routable{
 		api.NewOrderAPI(orderManager),
 	}
 
-	if err := runServer(apis); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
+	router := gin.Default()
+	srv := server.NewServer(router)
+	srv.RegisterRoutes(apis)
+
+	if err := srv.Start(ctx); err != nil {
 		panic(err)
 	}
-}
-
-func runServer(apis []server.Routable) error {
-	router := gin.Default()
-	s := server.NewServer(router)
-	s.RegisterRoutes(apis)
-
-	return s.Start()
 }

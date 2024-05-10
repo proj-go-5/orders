@@ -1,9 +1,10 @@
 package status
 
-type Status int
+type Status string
 
 const (
-	Add        Status = 1
-	Update     Status = 2
-	Deactivate Status = 3
+	NotActive Status = "not_active"
+	Active    Status = "active"
+	Updated   Status = "updated"
+	Finished  Status = "finished"
 )
