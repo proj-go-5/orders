@@ -28,7 +28,7 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 
 func (api *OrderAPI) listOrders(c *gin.Context) {
 	c.JSON(http.StatusOK, []models.Order{
-		{ID: 1, Status: status.Added, CustomerID: 1, TotalPrice: 100},
+		{ID: 1, Status: status.Actived, CustomerID: 1, TotalPrice: 100},
 	})
 }
 
