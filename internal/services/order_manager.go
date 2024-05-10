@@ -1,12 +1,18 @@
 package services
 
 import (
+	"context"
+	"errors"
 	"orders/internal/models"
 )
 
+var (
+	ErrEntityNotValid = errors.New("order validation failed")
+)
+
 type OrderRepository interface {
-	List() []*models.Order
-	Create(order *models.Order)
+	List(ctx context.Context) ([]*models.Order, error)
+	Create(ctx context.Context, order *models.Order) error
 }
 
 func NewOrderManager(repository OrderRepository) *OrderManager {
@@ -17,10 +23,13 @@ type OrderManager struct {
 	repository OrderRepository
 }
 
-func (m *OrderManager) List() []*models.Order {
-	return m.repository.List()
+func (m *OrderManager) List(ctx context.Context) ([]*models.Order, error) {
+	return m.repository.List(ctx)
 }
 
-func (m *OrderManager) Create(order *models.Order) error {
-	return nil
+func (m *OrderManager) Create(ctx context.Context, order *models.Order) error {
+	if order.Status != 0 || order.TotalPrice < 1 {
+		return ErrEntityNotValid
+	}
+	return m.repository.Create(ctx, order)
 }
