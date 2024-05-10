@@ -18,9 +18,6 @@ import (
 func main() {
 	gin.SetMode(config.Env("GIN_MODE"))
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-	defer stop()
-
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.Env("DB_HOST"),
@@ -30,22 +27,28 @@ func main() {
 	)
 
 	database := db.NewDatabase(dsn)
-	connection, err := database.GetConnection(ctx)
+	conn, stop, err := database.GetConnection()
+	defer stop()
+
 	if err != nil {
 		panic(err)
 	}
 
-	orderRepository := repositories.NewOrderRepository(connection)
+	orderRepository := repositories.NewOrderRepository(conn)
 	orderManager := services.NewOrderManager(orderRepository)
 
 	var apis = []server.Routable{
 		api.NewOrderAPI(orderManager),
 	}
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
 	router := gin.Default()
-	newServer := server.NewServer(router)
-	newServer.RegisterRoutes(apis)
-	if err := newServer.Start(ctx); err != nil {
+	srv := server.NewServer(router)
+	srv.RegisterRoutes(apis)
+
+	if err := srv.Start(ctx); err != nil {
 		panic(err)
 	}
 }
