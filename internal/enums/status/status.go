@@ -4,7 +4,7 @@ type Status string
 
 const (
 	NotActive Status = "not active"
-	Actived   Status = "actived"
+	Active    Status = "active"
 	Updated   Status = "updated"
 	Finished  Status = "finished"
 )
