@@ -16,17 +16,11 @@ type OrderRepository struct {
 }
 
 func (r OrderRepository) Create(ctx context.Context, order *models.Order) error {
-	result := r.connection.WithContext(ctx).Create(&order)
-	return result.Error
+	return r.connection.WithContext(ctx).Create(&order).Error
 }
 
-func (r OrderRepository) List(ctx context.Context) ([]*models.Order, error) {
-	var orders []*models.Order
+func (r OrderRepository) List(ctx context.Context) ([]models.Order, error) {
+	var orders []models.Order
 	result := r.connection.WithContext(ctx).Find(&orders)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return orders, nil
+	return orders, result.Error
 }

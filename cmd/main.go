@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"orders/internal/api"
 	"orders/internal/config"
 	"orders/internal/db"
 	"orders/internal/repositories"
 	"orders/internal/server"
 	"orders/internal/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -16,7 +17,8 @@ func main() {
 	connection := db.GetConnection()
 
 	orderRepository := repositories.NewOrderRepository(connection)
-	orderManager := services.NewOrderManager(orderRepository)
+	orderProductRepository := repositories.NewOrderProductRepository(connection)
+	orderManager := services.NewOrderManager(orderRepository, orderProductRepository)
 
 	var apis = []server.Routable{
 		api.NewOrderAPI(orderManager),

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"math/rand/v2"
 	"orders/internal/models"
 )
 
@@ -11,25 +12,75 @@ var (
 )
 
 type OrderRepository interface {
-	List(ctx context.Context) ([]*models.Order, error)
+	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, order *models.Order) error
 }
 
-func NewOrderManager(repository OrderRepository) *OrderManager {
-	return &OrderManager{repository}
+type OrderProductRepository interface {
+	GetAllByOrderId(ctx context.Context, orderID int) ([]models.OrderProduct, error)
+	Create(ctx context.Context, orderProduct *models.OrderProduct) error
+}
+
+func NewOrderManager(orderRepo OrderRepository, orderProductRepo OrderProductRepository) *OrderManager {
+	return &OrderManager{orderRepo, orderProductRepo}
 }
 
 type OrderManager struct {
-	repository OrderRepository
+	orderRepo         OrderRepository
+	orderProductsRepo OrderProductRepository
 }
 
-func (m *OrderManager) List(ctx context.Context) ([]*models.Order, error) {
-	return m.repository.List(ctx)
+func (m *OrderManager) List(ctx context.Context) ([]models.Order, error) {
+	orders, err := m.orderRepo.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range orders {
+		products, err := m.orderProductsRepo.GetAllByOrderId(ctx, orders[i].ID)
+		if err != nil {
+			return nil, err
+		}
+
+		orders[i].Products = products
+	}
+
+	return orders, nil
 }
 
 func (m *OrderManager) Create(ctx context.Context, order *models.Order) error {
-	if order.Status != 0 || order.TotalPrice < 1 {
-		return ErrEntityNotValid
+	totalPrice, err := m.getTotalPrice()
+	if err != nil {
+		return err
 	}
-	return m.repository.Create(ctx, order)
+	order.TotalPrice = totalPrice
+	order.Status = 0
+
+	err = m.orderRepo.Create(ctx, order)
+	if err != nil {
+		return err
+	}
+
+	for _, product := range order.Products {
+		product.OrderID = order.ID
+		productPrice, err := m.getProductPrice()
+		if err != nil {
+			return err
+		}
+		product.Price = productPrice
+		err = m.orderProductsRepo.Create(ctx, &product)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *OrderManager) getTotalPrice() (int, error) {
+	return rand.IntN(300) + 200, nil
+}
+
+func (m *OrderManager) getProductPrice() (int, error) {
+	return rand.IntN(50) + 50, nil
 }
