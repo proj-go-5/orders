@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/rand/v2"
+	"orders/internal/enums/status"
 	"orders/internal/models"
 )
 
@@ -54,7 +55,7 @@ func (m *OrderManager) Create(ctx context.Context, order *models.Order) error {
 		return err
 	}
 	order.TotalPrice = totalPrice
-	order.Status = 0
+	order.Status = status.Active
 
 	err = m.orderRepo.Create(ctx, order)
 	if err != nil {
