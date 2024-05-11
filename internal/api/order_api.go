@@ -24,8 +24,8 @@ type OrderAPI struct {
 func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 	router.GET("/orders", api.listOrders)
 	router.POST("/orders", api.createOrder)
-	router.PATCH("/order/{id}/status", api.updateOrderStatus)
-	router.GET("/order/{id}/history", api.getOrgerHistory)
+	router.PATCH("/order/:orderId/status", api.updateOrderStatus)
+	router.GET("/order/:orderId/history", api.getOrgerHistory)
 }
 
 func (api *OrderAPI) listOrders(c *gin.Context) {
@@ -39,9 +39,18 @@ func (api *OrderAPI) createOrder(c *gin.Context) {
 }
 
 func (api *OrderAPI) updateOrderStatus(c *gin.Context) {
+	orderId := c.Param("orderId")
+
 	c.Status(http.StatusCreated)
+
+	// userid := c.Param("userid")
+	// message := "userid is " + userid
+	// c.String(http.StatusOK, message)
+	// fmt.Println(message)
 }
 
 func (api *OrderAPI) getOrgerHistory(c *gin.Context) {
+	orderId := c.Param("orderId")
+
 	c.Status(http.StatusCreated)
 }
