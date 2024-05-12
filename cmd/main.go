@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"orders/internal/api"
 	"orders/internal/config"
 	"orders/internal/db"
@@ -13,6 +12,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -35,7 +36,8 @@ func main() {
 	}
 
 	orderRepository := repositories.NewOrderRepository(conn)
-	orderManager := services.NewOrderManager(orderRepository)
+	orderProductRepository := repositories.NewOrderProductRepository(conn)
+	orderManager := services.NewOrderManager(orderRepository, orderProductRepository)
 
 	var apis = []server.Routable{
 		api.NewOrderAPI(orderManager),
