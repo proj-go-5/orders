@@ -1,16 +1,19 @@
 package api
 
 import (
+	"context"
+	"log"
 	"net/http"
-	"orders/internal/enums/status"
+	"orders/internal/dto"
+	"orders/internal/mapper"
 	"orders/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 type OrderManager interface {
-	List() []*models.Order
-	Create(orderDTO *models.Order) error
+	List(ctx context.Context) ([]models.Order, error)
+	Create(ctx context.Context, orderDTO *models.Order) error
 }
 
 func NewOrderAPI(manager OrderManager) *OrderAPI {
@@ -26,12 +29,40 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 	router.POST("/orders", api.createOrder)
 }
 
-func (api *OrderAPI) listOrders(c *gin.Context) {
-	c.JSON(http.StatusOK, []models.Order{
-		{ID: 1, Status: status.Active, CustomerID: 1, TotalPrice: 100},
-	})
+func (api *OrderAPI) listOrders(ctx *gin.Context) {
+	orders, err := api.manager.List(ctx)
+
+	if err != nil {
+		err := ctx.AbortWithError(http.StatusNotFound, err)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &orders)
 }
 
-func (api *OrderAPI) createOrder(c *gin.Context) {
-	c.Status(http.StatusCreated)
+func (api *OrderAPI) createOrder(ctx *gin.Context) {
+	var orderDTO dto.Order
+
+	if err := ctx.BindJSON(&orderDTO); err != nil {
+		err := ctx.AbortWithError(http.StatusBadRequest, err)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
+
+	var order = mapper.ConvertOrderDTOToModel(&orderDTO)
+
+	if err := api.manager.Create(ctx, order); err != nil {
+		err := ctx.AbortWithError(http.StatusNotFound, err)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, &order)
 }
