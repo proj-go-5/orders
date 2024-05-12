@@ -15,11 +15,17 @@ var (
 type OrderRepository interface {
 	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, order *models.Order) error
+	UpdateOrderStatusByOrderId(ctx context.Context, orderID int, newStatus status.Status) (models.Order, error)
 }
 
 type OrderProductRepository interface {
 	GetAllByOrderId(ctx context.Context, orderID int) ([]models.OrderProduct, error)
 	Create(ctx context.Context, orderProduct *models.OrderProduct) error
+}
+
+type OrderHistoryRepository interface {
+	GetHistoryByOrderId(ctx context.Context, orderID int) ([]models.OrderHistory, error)
+	AddHistoryRecord(ctx context.Context, record *models.OrderHistory) error
 }
 
 func NewOrderManager(orderRepo OrderRepository, orderProductRepo OrderProductRepository, orderHistoryRepo OrderHistoryRepository) *OrderManager {
@@ -85,4 +91,16 @@ func (m *OrderManager) getTotalPrice() (int, error) {
 
 func (m *OrderManager) getProductPrice() (int, error) {
 	return rand.IntN(50) + 50, nil
+}
+
+func (m *OrderManager) AddHistoryRecord(ctx context.Context, record *models.OrderHistory) error {
+	return nil
+}
+
+func (m *OrderManager) GetHistoryByOrderId(ctx context.Context, orderID int) ([]models.OrderHistory, error) {
+	return []models.OrderHistory{}, nil
+}
+
+func (m *OrderManager) UpdateOrderStatusByOrderId(ctx context.Context, orderID int, newStatus status.Status) (models.Order, error) {
+	return models.Order{}, nil
 }

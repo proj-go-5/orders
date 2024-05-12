@@ -16,7 +16,8 @@ import (
 type OrderManager interface {
 	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, orderDTO *models.Order) error
-	UpdateStatusByOrderId(ctx context.Context, orderId int, newStatus status.Status) error
+	UpdateOrderStatusByOrderId(ctx context.Context, orderID int, newStatus status.Status) (models.Order, error)
+	AddHistoryRecord(ctx context.Context, record *models.OrderHistory) error
 	GetHistoryByOrderId(ctx context.Context, orderID int) ([]models.OrderHistory, error)
 }
 
@@ -74,12 +75,38 @@ func (api *OrderAPI) createOrder(ctx *gin.Context) {
 }
 
 func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
-	// if err := api.manager.UpdateStatusByOrderId()
+	orderID, err := strconv.Atoi(ctx.Param("orderID"))
+	if err != nil {
+		return
+	}
+
+	var statusDTO dto.OrderStatus
+	if err := ctx.BindJSON(&statusDTO); err != nil {
+		err := ctx.AbortWithError(http.StatusBadRequest, err)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
+
+	currRecord, err := api.manager.UpdateOrderStatusByOrderId(ctx, orderID, statusDTO.Status)
+	if err == nil {
+		record := models.OrderHistory{
+			OrderID:   currRecord.ID,
+			Status:    statusDTO.Status,
+			Comment:   statusDTO.Comment,
+			CreatedAt: currRecord.CreatedAt,
+		}
+		err = api.manager.AddHistoryRecord(ctx, &record)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
 }
 
 func (api *OrderAPI) getOrgerHistory(ctx *gin.Context) {
-	orderIDstr := ctx.Param("orderID")
-	orderID, err := strconv.Atoi(orderIDstr)
+	orderID, err := strconv.Atoi(ctx.Param("orderID"))
 	if err != nil {
 		return
 	}
@@ -93,5 +120,5 @@ func (api *OrderAPI) getOrgerHistory(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, history)
+	ctx.JSON(http.StatusOK, history)
 }
