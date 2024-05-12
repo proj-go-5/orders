@@ -37,7 +37,8 @@ func main() {
 
 	orderRepository := repositories.NewOrderRepository(conn)
 	orderProductRepository := repositories.NewOrderProductRepository(conn)
-	orderManager := services.NewOrderManager(orderRepository, orderProductRepository)
+	orderHistoryRepository := repositories.NewOrderHistoryRepository(conn)
+	orderManager := services.NewOrderManager(orderRepository, orderProductRepository, orderHistoryRepository)
 
 	var apis = []server.Routable{
 		api.NewOrderAPI(orderManager),

@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	"orders/internal/dto"
+	"orders/internal/enums/status"
 	"orders/internal/mapper"
 	"orders/internal/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +16,8 @@ import (
 type OrderManager interface {
 	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, orderDTO *models.Order) error
+	UpdateStatusByOrderId(ctx context.Context, orderId int, newStatus status.Status) error
+	GetHistoryByOrderId(ctx context.Context, orderID int) ([]models.OrderHistory, error)
 }
 
 func NewOrderAPI(manager OrderManager) *OrderAPI {
@@ -27,8 +31,8 @@ type OrderAPI struct {
 func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 	router.GET("/orders", api.listOrders)
 	router.POST("/orders", api.createOrder)
-	router.PATCH("/order/:orderId/status", api.updateOrderStatus)
-	router.GET("/order/:orderId/history", api.getOrgerHistory)
+	router.PATCH("/order/:orderID/status", api.updateOrderStatus)
+	router.GET("/order/:orderID/history", api.getOrgerHistory)
 }
 
 func (api *OrderAPI) listOrders(ctx *gin.Context) {
@@ -69,19 +73,25 @@ func (api *OrderAPI) createOrder(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, &order)
 }
 
-func (api *OrderAPI) updateOrderStatus(c *gin.Context) {
-	orderId := c.Param("orderId")
-
-	c.Status(http.StatusCreated)
-
-	// userid := c.Param("userid")
-	// message := "userid is " + userid
-	// c.String(http.StatusOK, message)
-	// fmt.Println(message)
+func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
+	// if err := api.manager.UpdateStatusByOrderId()
 }
 
-func (api *OrderAPI) getOrgerHistory(c *gin.Context) {
-	orderId := c.Param("orderId")
+func (api *OrderAPI) getOrgerHistory(ctx *gin.Context) {
+	orderIDstr := ctx.Param("orderID")
+	orderID, err := strconv.Atoi(orderIDstr)
+	if err != nil {
+		return
+	}
 
-	c.Status(http.StatusCreated)
+	history, err := api.manager.GetHistoryByOrderId(ctx, orderID)
+	if err != nil {
+		err := ctx.AbortWithError(http.StatusNotFound, err)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, history)
 }

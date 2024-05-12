@@ -22,13 +22,14 @@ type OrderProductRepository interface {
 	Create(ctx context.Context, orderProduct *models.OrderProduct) error
 }
 
-func NewOrderManager(orderRepo OrderRepository, orderProductRepo OrderProductRepository) *OrderManager {
-	return &OrderManager{orderRepo, orderProductRepo}
+func NewOrderManager(orderRepo OrderRepository, orderProductRepo OrderProductRepository, orderHistoryRepo OrderHistoryRepository) *OrderManager {
+	return &OrderManager{orderRepo, orderProductRepo, orderHistoryRepo}
 }
 
 type OrderManager struct {
 	orderRepo         OrderRepository
 	orderProductsRepo OrderProductRepository
+	orderHistoryRepo  OrderHistoryRepository
 }
 
 func (m *OrderManager) List(ctx context.Context) ([]models.Order, error) {
