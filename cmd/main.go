@@ -17,6 +17,7 @@ import (
 )
 
 func main() {
+	config.Init()
 	gin.SetMode(config.Env("GIN_MODE"))
 
 	dsn := fmt.Sprintf(
