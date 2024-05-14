@@ -33,7 +33,7 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 	router.GET("/orders", api.listOrders)
 	router.POST("/orders", api.createOrder)
 	router.PATCH("/order/:orderID/status", api.updateOrderStatus)
-	router.GET("/order/:orderID/history", api.getOrgerHistory)
+	router.GET("/order/:orderID/history", api.getOrderHistory)
 }
 
 func (api *OrderAPI) listOrders(ctx *gin.Context) {
@@ -90,22 +90,29 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 	}
 
 	currRecord, err := api.manager.UpdateOrderStatusByOrderId(ctx, orderID, statusDTO.Status)
-	if err == nil {
-		record := models.OrderHistory{
-			OrderID:   currRecord.ID,
-			Status:    statusDTO.Status,
-			Comment:   statusDTO.Comment,
-			CreatedAt: currRecord.CreatedAt,
-		}
-		err = api.manager.AddHistoryRecord(ctx, &record)
+	if err != nil {
+		err := ctx.AbortWithError(http.StatusBadRequest, err)
 		if err != nil {
 			log.Println("Error while aborting request:", err)
 		}
 		return
 	}
+
+	record := models.OrderHistory{
+		OrderID:   currRecord.ID,
+		Status:    statusDTO.Status,
+		Comment:   statusDTO.Comment,
+		CreatedAt: currRecord.CreatedAt,
+	}
+	err = api.manager.AddHistoryRecord(ctx, &record)
+	if err != nil {
+		log.Println("Error while aborting request:", err)
+	}
+	return
+
 }
 
-func (api *OrderAPI) getOrgerHistory(ctx *gin.Context) {
+func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
 	orderID, err := strconv.Atoi(ctx.Param("orderID"))
 	if err != nil {
 		return
