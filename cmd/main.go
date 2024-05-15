@@ -8,6 +8,7 @@ import (
 	"orders/internal/db"
 	"orders/internal/repositories"
 	"orders/internal/server"
+	"orders/internal/services/history"
 	"orders/internal/services/order"
 	"orders/internal/services/product"
 	"os"
@@ -39,16 +40,18 @@ func main() {
 
 	orderRepository := repositories.NewOrderRepository(conn)
 	orderProductRepository := repositories.NewOrderProductRepository(conn)
+	orderHistoryRepository := repositories.NewOrderHistoryRepository(conn)
 	productFetcher := product.NewMockFetcher()
 
 	// Product Catalog Service
 	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_CATALOG_SERVICE_ADDR"))
 	//productFetcher := product.NewFetcher(client)
 
-	orderManager := order.NewOrderManager(orderRepository, orderProductRepository, productFetcher)
+	orderManager := order.NewOrderManager(orderRepository, orderProductRepository, orderHistoryRepository, productFetcher)
+	historyManager := history.NewOrderHistoryManager(orderHistoryRepository)
 
 	var apis = []server.Routable{
-		api.NewOrderAPI(orderManager),
+		api.NewOrderAPI(orderManager, historyManager),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)

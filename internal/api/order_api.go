@@ -16,17 +16,21 @@ import (
 type OrderManager interface {
 	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, orderDTO *models.Order) error
-	UpdateOrderStatusByOrderId(ctx context.Context, orderID int, newStatus status.Status) (models.Order, error)
-	AddHistoryRecord(ctx context.Context, record *models.OrderHistory) error
-	GetHistoryByOrderId(ctx context.Context, orderID int) ([]models.OrderHistory, error)
+	UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error
 }
 
-func NewOrderAPI(manager OrderManager) *OrderAPI {
-	return &OrderAPI{manager}
+type OrderHistoryManager interface {
+	Create(ctx context.Context, record *models.OrderHistory) error
+	List(ctx context.Context, orderID int) ([]models.OrderHistory, error)
+}
+
+func NewOrderAPI(orderManager OrderManager, orderHistoryManager OrderHistoryManager) *OrderAPI {
+	return &OrderAPI{orderManager, orderHistoryManager}
 }
 
 type OrderAPI struct {
-	manager OrderManager
+	orderManager        OrderManager
+	orderHistoryManager OrderHistoryManager
 }
 
 func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
@@ -37,7 +41,7 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 }
 
 func (api *OrderAPI) listOrders(ctx *gin.Context) {
-	orders, err := api.manager.List(ctx)
+	orders, err := api.orderManager.List(ctx)
 
 	if err != nil {
 		err := ctx.AbortWithError(http.StatusNotFound, err)
@@ -63,7 +67,7 @@ func (api *OrderAPI) createOrder(ctx *gin.Context) {
 
 	var order = mapper.ConvertOrderDTOToModel(&orderDTO)
 
-	if err := api.manager.Create(ctx, order); err != nil {
+	if err := api.orderManager.Create(ctx, order); err != nil {
 		err := ctx.AbortWithError(http.StatusNotFound, err)
 		if err != nil {
 			log.Println("Error while aborting request:", err)
@@ -89,7 +93,7 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 		return
 	}
 
-	currRecord, err := api.manager.UpdateOrderStatusByOrderId(ctx, orderID, statusDTO.Status)
+	err = api.orderManager.UpdateStatus(ctx, orderID, statusDTO.Status)
 	if err != nil {
 		err := ctx.AbortWithError(http.StatusBadRequest, err)
 		if err != nil {
@@ -98,16 +102,6 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 		return
 	}
 
-	record := models.OrderHistory{
-		OrderID:   currRecord.ID,
-		Status:    statusDTO.Status,
-		Comment:   statusDTO.Comment,
-		CreatedAt: currRecord.CreatedAt,
-	}
-	err = api.manager.AddHistoryRecord(ctx, &record)
-	if err != nil {
-		log.Println("Error while aborting request:", err)
-	}
 	return
 
 }
@@ -118,7 +112,7 @@ func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
 		return
 	}
 
-	history, err := api.manager.GetHistoryByOrderId(ctx, orderID)
+	history, err := api.orderHistoryManager.List(ctx, orderID)
 	if err != nil {
 		err := ctx.AbortWithError(http.StatusNotFound, err)
 		if err != nil {
