@@ -24,12 +24,12 @@ func (c *Client) Get(ctx context.Context, path string, params url.Values) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+	defer func() {
+		err := response.Body.Close()
 		if err != nil {
 			fmt.Println(err)
 		}
-	}(response.Body)
+	}()
 
 	data, err := io.ReadAll(response.Body)
 	if err != nil {

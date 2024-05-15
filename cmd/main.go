@@ -41,7 +41,7 @@ func main() {
 	productFetcher := product.NewMockFetcher()
 
 	// Product Catalog Service
-	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_SERVICE_HOST"))
+	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_CATALOG_SERVICE_ADDR"))
 	//productFetcher := product.NewFetcher(client)
 
 	orderManager := order.NewOrderManager(orderRepository, orderProductRepository, productFetcher)
