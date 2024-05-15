@@ -8,7 +8,8 @@ import (
 	"orders/internal/db"
 	"orders/internal/repositories"
 	"orders/internal/server"
-	"orders/internal/services"
+	"orders/internal/services/order"
+	"orders/internal/services/product"
 	"os"
 	"os/signal"
 	"syscall"
@@ -37,7 +38,13 @@ func main() {
 
 	orderRepository := repositories.NewOrderRepository(conn)
 	orderProductRepository := repositories.NewOrderProductRepository(conn)
-	orderManager := services.NewOrderManager(orderRepository, orderProductRepository)
+	productFetcher := product.NewMockFetcher()
+
+	// Product Catalog Service
+	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_SERVICE_HOST"))
+	//productFetcher := product.NewFetcher(client)
+
+	orderManager := order.NewOrderManager(orderRepository, orderProductRepository, productFetcher)
 
 	var apis = []server.Routable{
 		api.NewOrderAPI(orderManager),
