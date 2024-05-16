@@ -2,12 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
-func init() {
-	if err := godotenv.Load(".env.local", ".env"); err != nil {
+func Init() {
+	if err := godotenv.Load(); err != nil {
 		fmt.Println("Error loading env files")
 	}
 }

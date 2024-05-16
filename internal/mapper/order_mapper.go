@@ -22,3 +22,12 @@ func ConvertOrderProductsDTOToModel(orderProductsDTO []dto.OrderProduct) []model
 	}
 	return products
 }
+
+func ConvertOrderStatusDTOtoModels(dto *dto.OrderStatus) (*models.OrderHistory, *models.Order) {
+	return &models.OrderHistory{
+			Status:  dto.Status,
+			Comment: dto.Comment,
+		}, &models.Order{
+			Status: dto.Status,
+		}
+}

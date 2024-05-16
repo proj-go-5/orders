@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"orders/internal/enums/status"
 	"orders/internal/models"
 
 	"gorm.io/gorm"
@@ -23,4 +24,8 @@ func (r OrderRepository) List(ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
 	result := r.connection.WithContext(ctx).Find(&orders)
 	return orders, result.Error
+}
+
+func (r OrderRepository) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error {
+	return r.connection.WithContext(ctx).Where("order_id = ?", orderID).Update("status", newStatus).Error
 }

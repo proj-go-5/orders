@@ -2,15 +2,18 @@ package order
 
 import (
 	"context"
+	"fmt"
 	"orders/internal/dto"
 	"orders/internal/enums/status"
 	"orders/internal/models"
+	"orders/internal/services/history"
 	"orders/internal/services/product"
 )
 
 type Repository interface {
 	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, order *models.Order) error
+	UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error
 }
 
 type ProductRepository interface {
@@ -22,13 +25,14 @@ type ProductFetcher interface {
 	GetCatalogProducts(ctx context.Context, filter *product.Filter) ([]*dto.CatalogProduct, error)
 }
 
-func NewOrderManager(orderRepo Repository, orderProductRepo ProductRepository, productFetcher ProductFetcher) *Manager {
-	return &Manager{orderRepo, orderProductRepo, productFetcher}
+func NewOrderManager(orderRepo Repository, orderProductRepo ProductRepository, historyRepo history.HistoryRepository, productFetcher ProductFetcher) *Manager {
+	return &Manager{orderRepo, orderProductRepo, historyRepo, productFetcher}
 }
 
 type Manager struct {
 	orderRepo         Repository
 	orderProductsRepo ProductRepository
+	historyRepo       history.HistoryRepository
 	productFetcher    ProductFetcher
 }
 
@@ -76,6 +80,36 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	historyRecord := models.OrderHistory{
+		OrderID:   order.ID,
+		Status:    order.Status,
+		Comment:   fmt.Sprintf("Created order %d", order.ID),
+		CreatedAt: order.CreatedAt,
+	}
+	err = m.historyRepo.Create(ctx, &historyRecord)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return nil
+}
+
+func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error {
+	err := m.orderRepo.UpdateStatus(ctx, orderID, newStatus)
+	if err != nil {
+		return err
+	}
+
+	historyRecord := models.OrderHistory{
+		OrderID: orderID,
+		Status:  newStatus,
+		Comment: fmt.Sprintf("New status %s in order %d", newStatus, orderID),
+	}
+	err = m.historyRepo.Create(ctx, &historyRecord)
+	if err != nil {
+		return err
 	}
 
 	return nil
