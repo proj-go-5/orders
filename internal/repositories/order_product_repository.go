@@ -7,20 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewOrderProductRepository(connection *gorm.DB) *OrderProductRepository {
-	return &OrderProductRepository{connection}
+type OrderProductRepository interface {
+	Create(ctx context.Context, tx *gorm.DB, orderProduct *models.OrderProduct) error
 }
 
-type OrderProductRepository struct {
+func NewOrderProductRepository(connection *gorm.DB) OrderProductRepository {
+	return &orderProductRepository{connection}
+}
+
+type orderProductRepository struct {
 	connection *gorm.DB
 }
 
-func (o OrderProductRepository) Create(ctx context.Context, product *models.OrderProduct) error {
-	return o.connection.WithContext(ctx).Create(&product).Error
-}
-
-func (o OrderProductRepository) GetAllByOrderId(ctx context.Context, orderID int) ([]models.OrderProduct, error) {
-	var products []models.OrderProduct
-	result := o.connection.WithContext(ctx).Find(&products, "order_id = ?", orderID)
-	return products, result.Error
+func (o orderProductRepository) Create(ctx context.Context, tx *gorm.DB, product *models.OrderProduct) error {
+	return tx.WithContext(ctx).Create(&product).Error
 }
