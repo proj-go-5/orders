@@ -8,7 +8,6 @@ import (
 	"orders/internal/models"
 	"orders/internal/services/history"
 	"orders/internal/services/product"
-	"time"
 )
 
 type Repository interface {
@@ -91,7 +90,7 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	}
 	err = m.historyRepo.Create(ctx, &historyRecord)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
 	return nil
@@ -104,10 +103,9 @@ func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus statu
 	}
 
 	historyRecord := models.OrderHistory{
-		OrderID:   orderID,
-		Status:    newStatus,
-		Comment:   fmt.Sprintf("New status %s in order %d", newStatus, orderID),
-		CreatedAt: time.Now(),
+		OrderID: orderID,
+		Status:  newStatus,
+		Comment: fmt.Sprintf("New status %s in order %d", newStatus, orderID),
 	}
 	err = m.historyRepo.Create(ctx, &historyRecord)
 	if err != nil {

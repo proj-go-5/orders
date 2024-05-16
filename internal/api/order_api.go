@@ -20,7 +20,6 @@ type OrderManager interface {
 }
 
 type OrderHistoryManager interface {
-	Create(ctx context.Context, record *models.OrderHistory) error
 	List(ctx context.Context, orderID int) ([]models.OrderHistory, error)
 }
 
