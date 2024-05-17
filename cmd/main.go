@@ -8,7 +8,9 @@ import (
 	"orders/internal/db"
 	"orders/internal/repositories"
 	"orders/internal/server"
-	"orders/internal/services"
+	"orders/internal/services/history"
+	"orders/internal/services/order"
+	"orders/internal/services/product"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,6 +19,7 @@ import (
 )
 
 func main() {
+	config.Init()
 	gin.SetMode(config.Env("GIN_MODE"))
 
 	dsn := fmt.Sprintf(
@@ -36,10 +39,18 @@ func main() {
 	}
 
 	orderRepository := repositories.NewOrderRepository(conn)
-	orderManager := services.NewOrderManager(orderRepository)
+	orderHistoryRepository := repositories.NewOrderHistoryRepository(conn)
+	productFetcher := product.NewMockFetcher()
+
+	// Product Catalog Service
+	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_CATALOG_SERVICE_ADDR"))
+	//productFetcher := product.NewFetcher(client)
+
+	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher)
+	historyManager := history.NewOrderHistoryManager(orderHistoryRepository)
 
 	var apis = []server.Routable{
-		api.NewOrderAPI(orderManager),
+		api.NewOrderAPI(orderManager, historyManager),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
