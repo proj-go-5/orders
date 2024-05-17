@@ -2,9 +2,11 @@ package db
 
 import (
 	"fmt"
+	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
+	"gorm.io/gorm/schema"
 )
 
 type Database struct {
@@ -12,7 +14,11 @@ type Database struct {
 }
 
 func (db *Database) GetConnection() (*gorm.DB, func(), error) {
-	connection, err := gorm.Open(postgres.Open(db.dsn), &gorm.Config{})
+	connection, err := gorm.Open(postgres.Open(db.dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 	if err != nil {
 		return nil, nil, err
 	}
