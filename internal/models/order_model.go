@@ -13,3 +13,9 @@ type Order struct {
 	CreatedAt    time.Time      `json:"created_at"`
 	Products     []OrderProduct `json:"products"`
 }
+
+type CustomerInfo struct {
+	Name            string `json:"name"`
+	DeliveryAddress string `json:"delivery_address,omitempty"`
+	Email           string `json:"email,omitempty"`
+}

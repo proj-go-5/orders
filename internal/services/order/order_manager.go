@@ -57,9 +57,9 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	order.TotalPrice = totalPrice
 	order.Status = status.Active
 
-	for i, product := range order.Products {
+	for i, p := range order.Products {
 		order.Products[i].OrderID = order.ID
-		order.Products[i].Price = priceProducts[product.ProductID]
+		order.Products[i].Price = priceProducts[p.ProductID]
 	}
 
 	err = m.orderRepo.Create(ctx, order)
