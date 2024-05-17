@@ -13,13 +13,12 @@ var (
 	ErrEntityNotValid = errors.New("order validation failed")
 )
 
-func NewOrderManager(orderRepo repositories.OrderRepository, orderProductRepo repositories.OrderProductRepository) *OrderManager {
-	return &OrderManager{orderRepo, orderProductRepo}
+func NewOrderManager(orderRepo repositories.OrderRepository) *OrderManager {
+	return &OrderManager{orderRepo}
 }
 
 type OrderManager struct {
-	orderRepo         repositories.OrderRepository
-	orderProductsRepo repositories.OrderProductRepository
+	orderRepo repositories.OrderRepository
 }
 
 func (m *OrderManager) List(ctx context.Context) ([]models.Order, error) {
@@ -39,53 +38,16 @@ func (m *OrderManager) Create(ctx context.Context, order *models.Order) error {
 	order.TotalPrice = totalPrice
 	order.Status = status.Active
 
-	for i := range order.OrderProducts {
+	for i := range order.Products {
 		productPrice, err := m.getProductPrice()
 		if err != nil {
 			return err
 		}
-		order.OrderProducts[i].Price = productPrice
+		order.Products[i].Price = productPrice
 	}
 
-	err = m.orderRepo.Create(ctx, order)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return m.orderRepo.Create(ctx, order)
 }
-
-// func (m *OrderManager) Create(ctx context.Context, order *models.Order) error {
-// 	totalPrice, err := m.getTotalPrice()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	order.TotalPrice = totalPrice
-// 	order.Status = status.Active
-
-// 	tx := m.orderRepo.BeginTransaction()
-// 	err = m.orderRepo.Create(ctx, tx, order)
-// 	if err != nil {
-// 		m.orderRepo.RollbackTransaction(tx)
-// 		return err
-// 	}
-
-// 	for _, product := range order.Products {
-// 		product.OrderID = order.ID
-// 		productPrice, err := m.getProductPrice()
-// 		if err != nil {
-// 			return err
-// 		}
-// 		product.Price = productPrice
-// 		err = m.orderProductsRepo.Create(ctx, tx, &product)
-// 		if err != nil {
-// 			m.orderRepo.RollbackTransaction(tx)
-// 			return err
-// 		}
-// 	}
-
-// 	return m.orderRepo.CommitTransaction(tx)
-// }
 
 func (m *OrderManager) getTotalPrice() (int, error) {
 	return rand.IntN(300) + 200, nil

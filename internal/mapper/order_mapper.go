@@ -12,7 +12,7 @@ func ConvertOrderDTOToModel(dto *dto.Order) *models.Order {
 			DeliveryAddress: dto.CustomerInfo.DeliveryAddress,
 			Email:           dto.CustomerInfo.Email,
 		},
-		OrderProducts: ConvertOrderProductsDTOToModel(dto.Products),
+		Products: ConvertOrderProductsDTOToModel(dto.Products),
 	}
 }
 
