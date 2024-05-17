@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 type Database struct {
@@ -14,11 +13,7 @@ type Database struct {
 }
 
 func (db *Database) GetConnection() (*gorm.DB, func(), error) {
-	connection, err := gorm.Open(postgres.Open(db.dsn), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-	})
+	connection, err := gorm.Open(postgres.Open(db.dsn), &gorm.Config{})
 	if err != nil {
 		return nil, nil, err
 	}

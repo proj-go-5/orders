@@ -15,6 +15,14 @@ type OrderHistoryRepository struct {
 	connection *gorm.DB
 }
 
+type Tabler interface {
+	TableName() string
+}
+
+func (OrderHistoryRepository) TableName() string {
+	return "order_history"
+}
+
 func (h OrderHistoryRepository) Create(ctx context.Context, record *models.OrderHistory) error {
 	return h.connection.WithContext(ctx).Create(&record).Error
 }
