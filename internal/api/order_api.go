@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/proj-go-5/accounts/pkg/authorization"
 )
 
 type OrderManager interface {
@@ -33,10 +34,21 @@ type OrderAPI struct {
 }
 
 func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
-	router.GET("/orders", api.listOrders)
+	jwtService := authorization.NewJwtService("test", 100)
+	authService := authorization.NewAuthServie(jwtService)
+
 	router.POST("/orders", api.createOrder)
-	router.PATCH("/order/:orderID/status", api.updateOrderStatus)
+	router.GET("/orders", wrap(authService.AdminMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		ctx := w.(*responseRecorder).Context
+		api.listOrders(ctx)
+	})))
+
 	router.GET("/order/:orderID/history", api.getOrderHistory)
+	router.PATCH("/order/:orderID/status", wrap(authService.AdminMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		ctx := w.(*responseRecorder).Context
+		api.updateOrderStatus(ctx)
+	})))
+
 }
 
 func (api *OrderAPI) listOrders(ctx *gin.Context) {
@@ -110,7 +122,6 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 	}
 
 	return
-
 }
 
 func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
@@ -129,4 +140,29 @@ func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, history)
+}
+
+func wrap(handler func(w http.ResponseWriter, r *http.Request)) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		w := &responseRecorder{ResponseWriter: c.Writer, Context: c}
+		r := c.Request
+		handler(w, r)
+
+		if w.statusCode == http.StatusUnauthorized || w.statusCode == http.StatusBadRequest {
+			c.AbortWithStatus(w.statusCode)
+		} else {
+			c.Next()
+		}
+	}
+}
+
+type responseRecorder struct {
+	gin.ResponseWriter
+	Context    *gin.Context
+	statusCode int
+}
+
+func (r *responseRecorder) WriteHeader(code int) {
+	r.statusCode = code
+	r.ResponseWriter.WriteHeader(code)
 }
