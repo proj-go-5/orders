@@ -11,3 +11,7 @@ type OrderHistory struct {
 	Comment   string        `json:"comment"`
 	CreatedAt time.Time     `json:"created_at"`
 }
+
+func (OrderHistory) TableName() string {
+	return "order_history"
+}
