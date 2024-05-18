@@ -39,7 +39,6 @@ func main() {
 	}
 
 	orderRepository := repositories.NewOrderRepository(conn)
-	orderProductRepository := repositories.NewOrderProductRepository(conn)
 	orderHistoryRepository := repositories.NewOrderHistoryRepository(conn)
 	productFetcher := product.NewMockFetcher()
 
@@ -47,7 +46,7 @@ func main() {
 	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_CATALOG_SERVICE_ADDR"))
 	//productFetcher := product.NewFetcher(client)
 
-	orderManager := order.NewOrderManager(orderRepository, orderProductRepository, orderHistoryRepository, productFetcher)
+	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher)
 	historyManager := history.NewOrderHistoryManager(orderHistoryRepository)
 
 	var apis = []server.Routable{

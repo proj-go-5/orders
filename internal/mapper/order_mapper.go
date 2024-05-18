@@ -7,8 +7,12 @@ import (
 
 func ConvertOrderDTOToModel(dto *dto.Order) *models.Order {
 	return &models.Order{
-		CustomerID: dto.CustomerID,
-		Products:   ConvertOrderProductsDTOToModel(dto.Products),
+		CustomerInfo: models.CustomerInfo{
+			Name:            dto.CustomerInfo.Name,
+			DeliveryAddress: dto.CustomerInfo.DeliveryAddress,
+			Email:           dto.CustomerInfo.Email,
+		},
+		Products: ConvertOrderProductsDTOToModel(dto.Products),
 	}
 }
 

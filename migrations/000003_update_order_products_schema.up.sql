@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX order_products_order_id_product_id_idx ON order_products (order_id, product_id);

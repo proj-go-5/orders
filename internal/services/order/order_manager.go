@@ -25,30 +25,20 @@ type ProductFetcher interface {
 	GetCatalogProducts(ctx context.Context, filter *product.Filter) ([]*dto.CatalogProduct, error)
 }
 
-func NewOrderManager(orderRepo Repository, orderProductRepo ProductRepository, historyRepo history.HistoryRepository, productFetcher ProductFetcher) *Manager {
-	return &Manager{orderRepo, orderProductRepo, historyRepo, productFetcher}
+func NewOrderManager(orderRepo Repository, historyRepo history.HistoryRepository, productFetcher ProductFetcher) *Manager {
+	return &Manager{orderRepo, historyRepo, productFetcher}
 }
 
 type Manager struct {
-	orderRepo         Repository
-	orderProductsRepo ProductRepository
-	historyRepo       history.HistoryRepository
-	productFetcher    ProductFetcher
+	orderRepo      Repository
+	historyRepo    history.HistoryRepository
+	productFetcher ProductFetcher
 }
 
 func (m *Manager) List(ctx context.Context) ([]models.Order, error) {
 	orders, err := m.orderRepo.List(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	for i := range orders {
-		products, err := m.orderProductsRepo.GetAllByOrderId(ctx, orders[i].ID)
-		if err != nil {
-			return nil, err
-		}
-
-		orders[i].Products = products
 	}
 
 	return orders, nil
@@ -67,19 +57,14 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	order.TotalPrice = totalPrice
 	order.Status = status.Active
 
+	for i, p := range order.Products {
+		order.Products[i].OrderID = order.ID
+		order.Products[i].Price = priceProducts[p.ProductID]
+	}
+
 	err = m.orderRepo.Create(ctx, order)
 	if err != nil {
 		return err
-	}
-
-	for _, orderProduct := range order.Products {
-		orderProduct.OrderID = order.ID
-		orderProduct.Price = priceProducts[orderProduct.ProductID]
-
-		err = m.orderProductsRepo.Create(ctx, &orderProduct)
-		if err != nil {
-			return err
-		}
 	}
 
 	historyRecord := models.OrderHistory{

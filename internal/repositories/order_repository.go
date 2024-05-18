@@ -22,8 +22,8 @@ func (r OrderRepository) Create(ctx context.Context, order *models.Order) error 
 
 func (r OrderRepository) List(ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
-	result := r.connection.WithContext(ctx).Find(&orders)
-	return orders, result.Error
+	err := r.connection.WithContext(ctx).Model(&models.Order{}).Preload("Products").Find(&orders).Error
+	return orders, err
 }
 
 func (r OrderRepository) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error {

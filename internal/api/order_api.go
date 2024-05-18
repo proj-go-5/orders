@@ -64,6 +64,14 @@ func (api *OrderAPI) createOrder(ctx *gin.Context) {
 		return
 	}
 
+	if validationError := orderDTO.Validate(); validationError != nil {
+		err := ctx.AbortWithError(http.StatusBadRequest, validationError)
+		if err != nil {
+			log.Println("Error while aborting request:", err)
+		}
+		return
+	}
+
 	var order = mapper.ConvertOrderDTOToModel(&orderDTO)
 
 	if err := api.orderManager.Create(ctx, order); err != nil {
