@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "4acb3916-83d1-49ba-a404-78569a6b6e4b",
+		"_postman_id": "91c8fea0-8112-4f5a-a3b1-c44f1f70573a",
 		"name": "go_course_orders",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "9410233"
@@ -30,7 +30,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"customer_id\": 23,\n    \"products\": {\n        \"order_id\": 1,\n        \"product_id\": 11,\n        \"quantity\": 4,\n        \"price\": 44\n    }\n}",
+					"raw": "{\n    \"customer_info\": {\n        \"name\": \"Peter\"\n    },\n    \"products\": [\n        {\n            \"order_id\": 1,\n            \"quantity\": 4\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -56,7 +56,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Status\": \"finished\",\n    \"comment\": \"test finish\"\n}",
+					"raw": "{\n    \"status\": \"updated\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
