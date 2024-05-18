@@ -22,7 +22,7 @@ type ProductRepository interface {
 }
 
 type ProductFetcher interface {
-	GetCatalogProducts(ctx context.Context, filter *product.Filter) ([]*dto.CatalogProduct, error)
+	GetProducts(ctx context.Context, filter *product.Filter) ([]*dto.Product, error)
 }
 
 func NewOrderManager(orderRepo Repository, historyRepo history.HistoryRepository, productFetcher ProductFetcher) *Manager {
@@ -47,7 +47,7 @@ func (m *Manager) List(ctx context.Context) ([]models.Order, error) {
 func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	productIDs := m.GetProductIDs(order)
 
-	catalogProducts, err := m.productFetcher.GetCatalogProducts(ctx, &product.Filter{IDs: productIDs})
+	catalogProducts, err := m.productFetcher.GetProducts(ctx, &product.Filter{IDs: productIDs})
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (m *Manager) GetProductIDs(order *models.Order) []int {
 	return productIDs
 }
 
-func (m *Manager) getPrices(catalogProducts []*dto.CatalogProduct) (int, map[int]int) {
+func (m *Manager) getPrices(catalogProducts []*dto.Product) (int, map[int]int) {
 	priceProducts := make(map[int]int, len(catalogProducts))
 	var totalPrice int
 
