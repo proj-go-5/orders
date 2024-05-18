@@ -81,16 +81,21 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	return nil
 }
 
-func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error {
+func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status, comment string) error {
 	err := m.orderRepo.UpdateStatus(ctx, orderID, newStatus)
 	if err != nil {
 		return err
 	}
 
+	historyComment := fmt.Sprintf("New status %s in order %d", newStatus, orderID)
+	if comment != "" {
+		historyComment = comment
+	}
+
 	historyRecord := models.OrderHistory{
 		OrderID: orderID,
 		Status:  newStatus,
-		Comment: fmt.Sprintf("New status %s in order %d", newStatus, orderID),
+		Comment: historyComment,
 	}
 	err = m.historyRepo.Create(ctx, &historyRecord)
 	if err != nil {
