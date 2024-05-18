@@ -16,7 +16,7 @@ import (
 type OrderManager interface {
 	List(ctx context.Context) ([]models.Order, error)
 	Create(ctx context.Context, orderDTO *models.Order) error
-	UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error
+	UpdateStatus(ctx context.Context, orderID int, newStatus status.Status, comment string) error
 }
 
 type OrderHistoryManager interface {
@@ -100,7 +100,7 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 		return
 	}
 
-	err = api.orderManager.UpdateStatus(ctx, orderID, statusDTO.Status)
+	err = api.orderManager.UpdateStatus(ctx, orderID, statusDTO.Status, statusDTO.Comment)
 	if err != nil {
 		err := ctx.AbortWithError(http.StatusBadRequest, err)
 		if err != nil {
