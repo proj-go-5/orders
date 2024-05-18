@@ -56,7 +56,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"status\": \"updated\"\n}",
+					"raw": "{\n    \"status\": \"updated\",\n    \"comment\": \"some reason\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
