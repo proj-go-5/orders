@@ -88,7 +88,6 @@ func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus statu
 	}
 
 	historyComment := fmt.Sprintf("New status %s in order %d", newStatus, orderID)
-	fmt.Println("---------------->", comment)
 	if comment != "" {
 		historyComment = comment
 	}
