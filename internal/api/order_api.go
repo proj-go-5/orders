@@ -38,13 +38,13 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 	authService := authorization.NewAuthServie(jwtService)
 
 	router.POST("/orders", api.createOrder)
-	router.GET("/orders", wrap(authService.AdminMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	router.GET("/orders", gin.WrapF(authService.AdminMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		ctx := w.(*responseRecorder).Context
 		api.listOrders(ctx)
 	})))
 
 	router.GET("/order/:orderID/history", api.getOrderHistory)
-	router.PATCH("/order/:orderID/status", wrap(authService.AdminMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	router.PATCH("/order/:orderID/status", gin.WrapF(authService.AdminMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		ctx := w.(*responseRecorder).Context
 		api.updateOrderStatus(ctx)
 	})))
@@ -120,8 +120,6 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 		}
 		return
 	}
-
-	return
 }
 
 func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
@@ -140,20 +138,6 @@ func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, history)
-}
-
-func wrap(handler func(w http.ResponseWriter, r *http.Request)) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		w := &responseRecorder{ResponseWriter: c.Writer, Context: c}
-		r := c.Request
-		handler(w, r)
-
-		if w.statusCode == http.StatusUnauthorized || w.statusCode == http.StatusBadRequest {
-			c.AbortWithStatus(w.statusCode)
-		} else {
-			c.Next()
-		}
-	}
 }
 
 type responseRecorder struct {
