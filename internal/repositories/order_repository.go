@@ -27,5 +27,5 @@ func (r OrderRepository) List(ctx context.Context) ([]models.Order, error) {
 }
 
 func (r OrderRepository) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error {
-	return r.connection.WithContext(ctx).Where("order_id = ?", orderID).Update("status", newStatus).Error
+	return r.connection.WithContext(ctx).Model(&models.Order{}).Where("id = ?", orderID).Update("status", newStatus).Error
 }

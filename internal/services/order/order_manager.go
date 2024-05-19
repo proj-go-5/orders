@@ -22,7 +22,7 @@ type ProductRepository interface {
 }
 
 type ProductFetcher interface {
-	GetCatalogProducts(ctx context.Context, filter *product.Filter) ([]*dto.CatalogProduct, error)
+	GetProducts(ctx context.Context, filter *product.Filter) ([]*dto.Product, error)
 }
 
 func NewOrderManager(orderRepo Repository, historyRepo history.HistoryRepository, productFetcher ProductFetcher) *Manager {
@@ -47,7 +47,7 @@ func (m *Manager) List(ctx context.Context) ([]models.Order, error) {
 func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	productIDs := m.GetProductIDs(order)
 
-	catalogProducts, err := m.productFetcher.GetCatalogProducts(ctx, &product.Filter{IDs: productIDs})
+	catalogProducts, err := m.productFetcher.GetProducts(ctx, &product.Filter{IDs: productIDs})
 	if err != nil {
 		return err
 	}
@@ -81,16 +81,21 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 	return nil
 }
 
-func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status) error {
+func (m *Manager) UpdateStatus(ctx context.Context, orderID int, newStatus status.Status, comment string) error {
 	err := m.orderRepo.UpdateStatus(ctx, orderID, newStatus)
 	if err != nil {
 		return err
 	}
 
+	historyComment := fmt.Sprintf("New status %s in order %d", newStatus, orderID)
+	if comment != "" {
+		historyComment = comment
+	}
+
 	historyRecord := models.OrderHistory{
 		OrderID: orderID,
 		Status:  newStatus,
-		Comment: fmt.Sprintf("New status %s in order %d", newStatus, orderID),
+		Comment: historyComment,
 	}
 	err = m.historyRepo.Create(ctx, &historyRecord)
 	if err != nil {
@@ -108,7 +113,7 @@ func (m *Manager) GetProductIDs(order *models.Order) []int {
 	return productIDs
 }
 
-func (m *Manager) getPrices(catalogProducts []*dto.CatalogProduct) (int, map[int]int) {
+func (m *Manager) getPrices(catalogProducts []*dto.Product) (int, map[int]int) {
 	priceProducts := make(map[int]int, len(catalogProducts))
 	var totalPrice int
 

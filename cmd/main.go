@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"orders/internal/api"
 	"orders/internal/config"
 	"orders/internal/db"
@@ -40,11 +41,9 @@ func main() {
 
 	orderRepository := repositories.NewOrderRepository(conn)
 	orderHistoryRepository := repositories.NewOrderHistoryRepository(conn)
-	productFetcher := product.NewMockFetcher()
 
-	// Product Catalog Service
-	//client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_CATALOG_SERVICE_ADDR"))
-	//productFetcher := product.NewFetcher(client)
+	client := product.NewClient(http.DefaultClient)
+	productFetcher := product.NewFetcher(client)
 
 	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher)
 	historyManager := history.NewOrderHistoryManager(orderHistoryRepository)

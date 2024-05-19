@@ -1,0 +1,118 @@
+{
+	"info": {
+		"_postman_id": "91c8fea0-8112-4f5a-a3b1-c44f1f70573a",
+		"name": "go_course_orders",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9410233"
+	},
+	"item": [
+		{
+			"name": "get all orders",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/orders",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create new order",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer_info\": {\n        \"name\": \"Peter\"\n    },\n    \"products\": [\n        {\n            \"order_id\": 1,\n            \"quantity\": 4\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/orders",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update status",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"updated\",\n    \"comment\": \"some reason\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/order/:orderId/status",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"order",
+						":orderId",
+						"status"
+					],
+					"variable": [
+						{
+							"key": "orderId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show history by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/order/:orderId/history",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"order",
+						":orderId",
+						"history"
+					],
+					"variable": [
+						{
+							"key": "orderId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "server",
+			"value": "localhost:8089"
+		}
+	]
+}
