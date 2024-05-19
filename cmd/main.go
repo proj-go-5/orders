@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/proj-go-5/accounts/pkg/authorization"
 	"net/http"
 	"orders/internal/api"
+	"orders/internal/api/middleware"
 	"orders/internal/config"
 	"orders/internal/db"
 	"orders/internal/repositories"
@@ -14,6 +16,7 @@ import (
 	"orders/internal/services/product"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -48,8 +51,16 @@ func main() {
 	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher)
 	historyManager := history.NewOrderHistoryManager(orderHistoryRepository)
 
+	JwtExpiration, err := strconv.Atoi(config.Env("JWT_EXPIRATION"))
+	if err != nil {
+		panic(err)
+	}
+	jwtService := authorization.NewJwtService(config.Env("JWT_SECRET"), JwtExpiration)
+	authService := authorization.NewAuthServie(jwtService)
+	adminMiddlewareAdapter := middleware.NewAdminMiddlewareAdapter(authService)
+
 	var apis = []server.Routable{
-		api.NewOrderAPI(orderManager, historyManager),
+		api.NewOrderAPI(orderManager, historyManager, adminMiddlewareAdapter),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
