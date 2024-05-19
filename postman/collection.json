@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "91c8fea0-8112-4f5a-a3b1-c44f1f70573a",
-		"name": "go_course_orders",
+		"_postman_id": "ee77c2a2-d862-4885-908d-9fbe28c045f1",
+		"name": "Orders",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "9410233"
+		"_exporter_id": "13609997"
 	},
 	"item": [
 		{
@@ -30,7 +30,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"customer_info\": {\n        \"name\": \"Peter\"\n    },\n    \"products\": [\n        {\n            \"order_id\": 1,\n            \"quantity\": 4\n        }\n    ]\n}",
+					"raw": "{\n    \"customer_info\": {\n        \"name\": \"Peter\",\n        \"email\": \"peter@gmail.com\",\n        \"address\": \"Kyiv, Olenivska 15\"\n    },\n    \"products\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1\n        },\n\n        {\n            \"product_id\": 2,\n            \"quantity\": 2\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -52,6 +52,16 @@
 		{
 			"name": "update status",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PATCH",
 				"header": [],
 				"body": {
@@ -64,44 +74,39 @@
 					}
 				},
 				"url": {
-					"raw": "{{server}}/order/:orderId/status",
+					"raw": "{{server}}/orders/60/status",
 					"host": [
 						"{{server}}"
 					],
 					"path": [
-						"order",
-						":orderId",
+						"orders",
+						"60",
 						"status"
-					],
-					"variable": [
-						{
-							"key": "orderId",
-							"value": "1"
-						}
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "show history by id",
+			"name": "get status history",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{server}}/order/:orderId/history",
+					"raw": "{{server}}/orders/60/history",
 					"host": [
 						"{{server}}"
 					],
 					"path": [
-						"order",
-						":orderId",
+						"orders",
+						"60",
 						"history"
 					],
-					"variable": [
+					"query": [
 						{
-							"key": "orderId",
-							"value": "1"
+							"key": "",
+							"value": null,
+							"disabled": true
 						}
 					]
 				}
@@ -109,10 +114,37 @@
 			"response": []
 		}
 	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
 	"variable": [
 		{
 			"key": "server",
-			"value": "localhost:8089"
+			"value": ""
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
 		}
 	]
 }

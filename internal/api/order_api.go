@@ -23,20 +23,34 @@ type OrderHistoryManager interface {
 	List(ctx context.Context, orderID int) ([]models.OrderHistory, error)
 }
 
-func NewOrderAPI(orderManager OrderManager, orderHistoryManager OrderHistoryManager) *OrderAPI {
-	return &OrderAPI{orderManager, orderHistoryManager}
+type AdminMiddleware interface {
+	Handler() gin.HandlerFunc
+}
+
+func NewOrderAPI(
+	orderManager OrderManager,
+	orderHistoryManager OrderHistoryManager,
+	adminMiddleware AdminMiddleware,
+) *OrderAPI {
+	return &OrderAPI{orderManager, orderHistoryManager, adminMiddleware}
 }
 
 type OrderAPI struct {
 	orderManager        OrderManager
 	orderHistoryManager OrderHistoryManager
+	adminMiddleware     AdminMiddleware
 }
 
 func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
-	router.GET("/orders", api.listOrders)
+	adminRoutes := router.Group("/")
+	adminRoutes.Use(api.adminMiddleware.Handler())
+	{
+		adminRoutes.GET("/orders", api.listOrders)
+		adminRoutes.PATCH("/orders/:orderID/status", api.updateOrderStatus)
+	}
+
+	router.GET("/orders/:orderID/history", api.getOrderHistory)
 	router.POST("/orders", api.createOrder)
-	router.PATCH("/order/:orderID/status", api.updateOrderStatus)
-	router.GET("/order/:orderID/history", api.getOrderHistory)
 }
 
 func (api *OrderAPI) listOrders(ctx *gin.Context) {
@@ -110,7 +124,6 @@ func (api *OrderAPI) updateOrderStatus(ctx *gin.Context) {
 	}
 
 	return
-
 }
 
 func (api *OrderAPI) getOrderHistory(ctx *gin.Context) {
