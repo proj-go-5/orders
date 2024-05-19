@@ -1,3 +1,5 @@
+//go:build dev
+
 package product
 
 import (
@@ -9,8 +11,8 @@ import (
 type MockFetcher struct {
 }
 
-func (f *MockFetcher) GetCatalogProducts(ctx context.Context, filter *Filter) ([]*dto.CatalogProduct, error) {
-	var products []*dto.CatalogProduct
+func (f *MockFetcher) GetProducts(ctx context.Context, filter *Filter) ([]*dto.Product, error) {
+	var products []*dto.Product
 
 	for _, ID := range filter.IDs {
 		price, err := f.randomPrice()
@@ -18,7 +20,7 @@ func (f *MockFetcher) GetCatalogProducts(ctx context.Context, filter *Filter) ([
 			return nil, err
 		}
 
-		products = append(products, &dto.CatalogProduct{
+		products = append(products, &dto.Product{
 			ID:    ID,
 			Price: price,
 		})
@@ -31,6 +33,6 @@ func (f *MockFetcher) randomPrice() (int, error) {
 	return rand.IntN(50) + 50, nil
 }
 
-func NewMockFetcher() *MockFetcher {
+func NewFetcher(client *Client) *MockFetcher {
 	return &MockFetcher{}
 }

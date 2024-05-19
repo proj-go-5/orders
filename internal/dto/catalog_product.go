@@ -1,7 +1,11 @@
 package dto
 
-type CatalogProduct struct {
+type ListProductsResponse struct {
+	Products []*Product `json:"page"`
+}
+
+type Product struct {
 	ID    int    `json:"id"`
-	Name  string `json:"name"`
+	Title string `json:"title"`
 	Price int    `json:"price"`
 }
