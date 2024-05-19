@@ -6,12 +6,12 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"orders/internal/config"
 )
 
 type Client struct {
-	http   *http.Client
-	scheme string
-	host   string
+	http *http.Client
+	addr string
 }
 
 func (c *Client) Get(ctx context.Context, path string, params url.Values) ([]byte, error) {
@@ -41,9 +41,15 @@ func (c *Client) Get(ctx context.Context, path string, params url.Values) ([]byt
 }
 
 func (c *Client) getAbsoluteURL(path string, params url.Values) string {
-	return fmt.Sprintf("%s://%s%s?%s", c.scheme, c.host, path, params.Encode())
+	return fmt.Sprintf("%s%s?%s", c.addr, path, params.Encode())
 }
 
-func NewClient(httpClient *http.Client, scheme string, host string) *Client {
-	return &Client{httpClient, scheme, host}
+func NewClient(httpClient *http.Client) *Client {
+	addr := fmt.Sprintf(
+		"%s://%s",
+		config.Env("PRODUCT_CATALOG_ADDR_SCHEME"),
+		config.Env("PRODUCT_CATALOG_SERVICE_ADDR"),
+	)
+
+	return &Client{httpClient, addr}
 }

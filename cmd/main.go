@@ -42,7 +42,7 @@ func main() {
 	orderRepository := repositories.NewOrderRepository(conn)
 	orderHistoryRepository := repositories.NewOrderHistoryRepository(conn)
 
-	client := product.NewClient(http.DefaultClient, config.Env("PRODUCT_CATALOG_ADDR_SCHEME"), config.Env("PRODUCT_CATALOG_SERVICE_ADDR"))
+	client := product.NewClient(http.DefaultClient)
 	productFetcher := product.NewFetcher(client)
 
 	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher)
