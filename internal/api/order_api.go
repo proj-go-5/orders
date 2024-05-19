@@ -49,7 +49,7 @@ func (api *OrderAPI) RegisterRoutes(router *gin.Engine) {
 		adminRoutes.PATCH("/orders/:orderID/status", api.updateOrderStatus)
 	}
 
-	adminRoutes.GET("/orders/:orderID/history", api.getOrderHistory)
+	router.GET("/orders/:orderID/history", api.getOrderHistory)
 	router.POST("/orders", api.createOrder)
 }
 
