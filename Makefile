@@ -3,7 +3,7 @@ export
 
 # Run project
 up:
-	docker-compose up -d && air
+	docker-compose up -d && go build -tags dev -o app ./cmd && ./app
 
 # Example: make migration-create create_orders_table
 migration-create:

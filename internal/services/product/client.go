@@ -9,8 +9,9 @@ import (
 )
 
 type Client struct {
-	http *http.Client
-	host string
+	http   *http.Client
+	scheme string
+	host   string
 }
 
 func (c *Client) Get(ctx context.Context, path string, params url.Values) ([]byte, error) {
@@ -40,9 +41,9 @@ func (c *Client) Get(ctx context.Context, path string, params url.Values) ([]byt
 }
 
 func (c *Client) getAbsoluteURL(path string, params url.Values) string {
-	return fmt.Sprintf("http://%s%s?%s", c.host, path, params.Encode())
+	return fmt.Sprintf("%s://%s%s?%s", c.scheme, c.host, path, params.Encode())
 }
 
-func NewClient(httpClient *http.Client, host string) *Client {
-	return &Client{httpClient, host}
+func NewClient(httpClient *http.Client, scheme string, host string) *Client {
+	return &Client{httpClient, scheme, host}
 }
