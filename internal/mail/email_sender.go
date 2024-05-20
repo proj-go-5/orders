@@ -42,19 +42,6 @@ func (e *EmailSender) SendEmail(o *models.Order, products []*dto.Product) error 
 }
 
 func (e *EmailSender) buildBodyText(products []models.OrderProduct, productInfo []*dto.Product) string {
-	// var result bytes.Buffer
-	// result.WriteString("Thank you for your order.\n")
-
-	// for _, p := range products {
-	// 	for _, pi := range productInfo {
-	// 		if p.ProductID == pi.ID {
-	// 			str := fmt.Sprintf("%s: %d\n", pi.Title, p.Quantity)
-	// 			result.WriteString(str)
-	// 		}
-	// 	}
-	// }
-	// return result.String()
-
 	var result bytes.Buffer
 	result.WriteString("Thank you for your order.\n")
 
