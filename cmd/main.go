@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/proj-go-5/accounts/pkg/authorization"
 	"net/http"
 	"orders/internal/api"
 	"orders/internal/api/middleware"
 	"orders/internal/config"
 	"orders/internal/db"
+	"orders/internal/mail"
 	"orders/internal/repositories"
 	"orders/internal/server"
 	"orders/internal/services/history"
@@ -18,6 +18,8 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+
+	"github.com/proj-go-5/accounts/pkg/authorization"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,8 +50,9 @@ func main() {
 
 	client := product.NewClient(http.DefaultClient)
 	productFetcher := product.NewFetcher(client)
+	emailSender := mail.NewEmailSender()
 
-	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher)
+	orderManager := order.NewOrderManager(orderRepository, orderHistoryRepository, productFetcher, emailSender)
 	historyManager := history.NewOrderHistoryManager(orderHistoryRepository)
 
 	JwtExpiration, err := strconv.Atoi(config.Env("JWT_EXPIRATION"))

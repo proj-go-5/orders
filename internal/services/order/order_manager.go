@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"orders/internal/dto"
 	"orders/internal/enums/status"
+	"orders/internal/mail"
 	"orders/internal/models"
 	"orders/internal/services/history"
 	"orders/internal/services/product"
@@ -25,14 +26,15 @@ type ProductFetcher interface {
 	GetProducts(ctx context.Context, filter *product.Filter) ([]*dto.Product, error)
 }
 
-func NewOrderManager(orderRepo Repository, historyRepo history.HistoryRepository, productFetcher ProductFetcher) *Manager {
-	return &Manager{orderRepo, historyRepo, productFetcher}
+func NewOrderManager(orderRepo Repository, historyRepo history.HistoryRepository, productFetcher ProductFetcher, emailSender *mail.EmailSender) *Manager {
+	return &Manager{orderRepo, historyRepo, productFetcher, emailSender}
 }
 
 type Manager struct {
 	orderRepo      Repository
 	historyRepo    history.HistoryRepository
 	productFetcher ProductFetcher
+	emailSender    *mail.EmailSender
 }
 
 func (m *Manager) List(ctx context.Context) ([]models.Order, error) {
@@ -74,6 +76,11 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 		CreatedAt: order.CreatedAt,
 	}
 	err = m.historyRepo.Create(ctx, &historyRecord)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = m.emailSender.SendEmail(order, catalogProducts)
 	if err != nil {
 		fmt.Println(err)
 	}
