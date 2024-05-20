@@ -80,7 +80,7 @@ func (m *Manager) Create(ctx context.Context, order *models.Order) error {
 		fmt.Println(err)
 	}
 
-	err = m.emailSender.SendEmail(order)
+	err = m.emailSender.SendEmail(order, catalogProducts)
 	if err != nil {
 		fmt.Println(err)
 	}
